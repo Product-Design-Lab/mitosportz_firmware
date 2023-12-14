@@ -18,7 +18,7 @@ BLEService mitosportzService("20B10020-E8F2-537E-4F6C-D104768A1214"); // create 
 // Bluetooth Characteristics
 BLEIntCharacteristic heartRateCharacteristic("20B10022-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Heart rate
 BLEIntCharacteristic bloodOxygenCharacteristic("20B10021-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Pulse Oximetry
-BLEIntCharacteristic batteryLevelCharacteristic("20B10022-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // The battery level of the device from 0-100
+BLEIntCharacteristic batteryLevelCharacteristic("20B10020-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // The battery level of the device from 0-100
 
 BLEByteCharacteristic resetCharacteristic("20B10023-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Resets the device and the app
 BLEByteCharacteristic LEDOnTimeCharacteristic("20B10024-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // LED On Time
@@ -59,8 +59,8 @@ void setup() {
   } 
 
 
-  BLE.setDeviceName("Mitosports_01");   // set the device name
-  BLE.setLocalName("Mitosports_01");    // set the local name peripheral advertises
+  BLE.setDeviceName("Mitosports_01_B");   // set the device name
+  BLE.setLocalName("Mitosports_01_B");    // set the local name peripheral advertises
   BLE.setAdvertisedService(mitosportzService); // set the UUID for the service this peripheral advertises:
   mitosportzService.addCharacteristic(heartRateCharacteristic); 
   mitosportzService.addCharacteristic(batteryLevelCharacteristic); 
@@ -92,8 +92,8 @@ void loop() {
   }
 
 
-  heartRate = 5*sin(i*PI/16) + 65;
-  bloodOxygenSaturation = 5*sin(i*PI/16) + 95;
+  heartRate = 5*sin(i*PI/16) + 45;
+  bloodOxygenSaturation = 5*sin(i*PI/16) + 80;
 
   
   BLE.poll();
