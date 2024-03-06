@@ -12,6 +12,9 @@ unsigned long timer = 0;
 // Pins
 const int ledPin = 13; 
 
+// Test
+unsigned char TestString[16] = "Test";
+
 // Bluetooth Services
 BLEService mitosportzService("20B10020-E8F2-537E-4F6C-D104768A1214"); // create service
 
@@ -24,8 +27,9 @@ BLEIntCharacteristic activeLaserProportionCharacteristic("20B10025-E8F2-537E-4F6
 BLEIntCharacteristic laserPowerLevelCharacteristic("20B10026-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Percentage of maximum laser power
 BLEByteCharacteristic ledTimingCharacteristic("20B10027-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Laser Diode Timing
 BLEByteCharacteristic laserTimingCharacteristic("20B10028-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Laser Diode Delay
-BLEByteCharacteristic resetCharacteristic("20B10029-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify); // Resets the device and the app
+BLEByteCharacteristic resetCharacteristic("20B10029-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify);
 
+BLECharacteristic testCharacteristic("20B10029-E8F2-537E-4F6C-D104768A1214", BLERead | BLEWrite | BLENotify, 16); // Test data
 
 // Misc
 int i = 0;
@@ -34,9 +38,9 @@ bool usbConnected = false;
 int batteryLevel = 100;
 int heartRate = 65;
 int bloodOxygenSaturation = 100;
-int sessionDuration = 0;
-int activeLaserProportion = 0;
-int laserPowerLevel = 0;
+int sessionDuration = 560;
+int activeLaserProportion = 50;
+int laserPowerLevel = 50;
 
 int ledTiming = 0;
 int laserTiming = 0;
@@ -73,15 +77,17 @@ void setup() {
   mitosportzService.addCharacteristic(laserPowerLevelCharacteristic); 
   mitosportzService.addCharacteristic(ledTimingCharacteristic); 
   mitosportzService.addCharacteristic(laserTimingCharacteristic); 
-  mitosportzService.addCharacteristic(resetCharacteristic); 
+  mitosportzService.addCharacteristic(resetCharacteristic);
+  mitosportzService.addCharacteristic(testCharacteristic);
   BLE.addService(mitosportzService);
 
   sessionDurationCharacteristic.setEventHandler(BLEWritten, sessionDurationCharacteristicWritten);
   activeLaserProportionCharacteristic.setEventHandler(BLEWritten, activeLaserProportionCharacteristicWritten);
   laserPowerLevelCharacteristic.setEventHandler(BLEWritten, laserPowerLevelCharacteristicWritten);
-  ledTimingCharacteristic.setEventHandler(BLEWritten, sessionDurationCharacteristicWritten);
-  laserTimingCharacteristic.setEventHandler(BLEWritten, sessionDurationCharacteristicWritten);
+  ledTimingCharacteristic.setEventHandler(BLEWritten, ledTimingCharacteristicWritten);
+  laserTimingCharacteristic.setEventHandler(BLEWritten, laserTimingCharacteristicWritten);
   resetCharacteristic.setEventHandler(BLEWritten, resetCharacteristicWritten);
+  testCharacteristic.setEventHandler(BLEWritten, testCharacteristicWritten)
 
   BLE.advertise(); // start advertising
 
@@ -93,11 +99,20 @@ void loop() {
 
   if (i % 15 == 0) {
     batteryLevel--;
+    laserPowerLevel--;
+    sessionDuration--;
   }
   if (batteryLevel < 0) {
     batteryLevel = 100;
+    laserPowerLevel = 100;
+    sessionDuration = 560;
   }
 
+  if (i % 2 == 0) {
+    activeLaserProportion = 50;
+  } else {
+    activeLaserProportion = 100;
+  }
 
   heartRate = 5*sin(i*PI/16) + 65;
   bloodOxygenSaturation = 5*sin(i*PI/16) + 95;
@@ -114,6 +129,7 @@ void loop() {
   laserPowerLevelCharacteristic.setValue(laserPowerLevel);
   ledTimingCharacteristic.setValue(ledTiming);
   laserTimingCharacteristic.setValue(laserTiming);
+  testCharacteristic.setValue(TestString);
   
   // Write Value
   batteryLevelCharacteristic.writeValue(batteryLevel);
@@ -125,12 +141,24 @@ void loop() {
   ledTimingCharacteristic.writeValue(ledTiming);
   laserTimingCharacteristic.writeValue(laserTiming);
   
-  
-  Serial.println("Heart Rate: " + String(heartRate) + "bpm, Blood Oxygen Saturation: " + String(bloodOxygenSaturation) + "%");
+  // Serial.println("Device A - Heart Rate: " + String(heartRate) + "bpm, Blood Oxygen Saturation: " + String(bloodOxygenSaturation) + "%, Session Duration: " + String(sessionDuration) + "s, Active Laser Proportion: " + String(activeLaserProportion) + "%, Laser Power Level: " + String(laserPowerLevel) + "%");
+  Serial.println("TEST: " + String(TestString));
 
   delay(50);
   i++;
 
+}
+
+void testCharacteristicWritten(BLEDevice central, BLECharacteristic characteristic) {
+  Serial.println("RECEIVED TEST STRING");
+  TestString = characteristic.value()[0];
+
+  for (int j=0; j < 9; j++) {
+    digitalWrite(ledPin, HIGH);
+    delay(100);
+    digitalWrite(ledPin, LOW);
+    delay(100);
+  }
 }
 
 
@@ -184,7 +212,7 @@ void ledTimingCharacteristicWritten(BLEDevice central, BLECharacteristic charact
 
   Serial.println("Received ledTiming: " + String(characteristic.value()[0]));
   ledTiming  = characteristic.value()[0];
-
+  Serial.println("Length: " + String(characteristic.valueLength()));
 
   for (int j=0; j < 10; j++) {
     digitalWrite(ledPin, HIGH);
@@ -199,6 +227,7 @@ void laserTimingCharacteristicWritten(BLEDevice central, BLECharacteristic chara
 
   Serial.println("Received laserTiming: " + String(characteristic.value()[0]));
   laserTiming  = characteristic.value()[0];
+  Serial.println(characteristic.valueLength());
 
   for (int j=0; j < 10; j++) {
     digitalWrite(ledPin, HIGH);

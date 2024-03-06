@@ -34,9 +34,9 @@ bool usbConnected = false;
 int batteryLevel = 100;
 int heartRate = 65;
 int bloodOxygenSaturation = 100;
-int sessionDuration = 0;
-int activeLaserProportion = 0;
-int laserPowerLevel = 0;
+int sessionDuration = 560;
+int activeLaserProportion = 50;
+int laserPowerLevel = 50;
 
 int ledTiming = 0;
 int laserTiming = 0;
@@ -93,11 +93,20 @@ void loop() {
 
   if (i % 15 == 0) {
     batteryLevel--;
+    laserPowerLevel--;
+    sessionDuration--;
   }
   if (batteryLevel < 0) {
     batteryLevel = 100;
+    laserPowerLevel = 100;
+    sessionDuration = 560;
   }
 
+  if (i % 2 == 0) {
+    activeLaserProportion = 50;
+  } else {
+    activeLaserProportion = 100;
+  }
 
   heartRate = 5*sin(i*PI/16) + 45;
   bloodOxygenSaturation = 5*sin(i*PI/16) + 80;
@@ -126,7 +135,7 @@ void loop() {
   laserTimingCharacteristic.writeValue(laserTiming);
   
   
-  Serial.println("Heart Rate: " + String(heartRate) + "bpm, Blood Oxygen Saturation: " + String(bloodOxygenSaturation) + "%");
+  Serial.println("Device B - Heart Rate: " + String(heartRate) + "bpm, Blood Oxygen Saturation: " + String(bloodOxygenSaturation) + "%, Session Duration: " + String(sessionDuration) + "s, Active Laser Proportion: " + String(activeLaserProportion) + "%, Laser Power Level: " + String(laserPowerLevel) + "%");
 
   delay(50);
   i++;
