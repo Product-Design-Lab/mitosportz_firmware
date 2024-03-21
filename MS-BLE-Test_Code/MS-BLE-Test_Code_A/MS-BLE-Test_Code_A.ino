@@ -59,8 +59,8 @@ void setup() {
     Serial.println("Entering LED Error State");
   }
 
-  BLE.setDeviceName("MS_01_A");
-  BLE.setLocalName("MS_01_A");
+  BLE.setDeviceName("MS_A_1234");
+  BLE.setLocalName("MS_A_1234");
 
   BLE.setAdvertisedService(mitosportzService);
 
