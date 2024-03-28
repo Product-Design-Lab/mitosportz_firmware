@@ -124,7 +124,8 @@ void sessionDurationReceived(BLEDevice central, BLECharacteristic characteristic
 void ledTimingReceived(BLEDevice central, BLECharacteristic characteristic) {
   Serial.println("LED Timing Received");
   for (int j = 0; j < characteristic.valueLength(); j++) {
-    ledTiming[j] = characteristic.value()[j];
+    int val = characteristic.value()[j];
+    Serial.println(val);
   }
 }
 
@@ -133,12 +134,6 @@ void laserTimingReceived(BLEDevice central, BLECharacteristic characteristic) {
   for (int j = 0; j < characteristic.valueLength(); j++) {
     int val = characteristic.value()[j];
     Serial.println(val);
-    if (val == 48) {
-      laserTiming[j] = '0';
-    }
-    if (val == 49) {
-      laserTiming[j] = '1';
-    }
   }
 }
 
